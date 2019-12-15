@@ -6,7 +6,7 @@
 public class FileStorage {
     private String name;
     private String path;
-    private String hex;
+    private int[] binary;
 
     public String getName() {
         return name;
@@ -24,24 +24,17 @@ public class FileStorage {
         this.path = path;
     }
 
-    public String getHex() {
-        return hex;
+    public int[] getBinary() {
+        return binary;
     }
 
-    public void setHex(String hex) {
-        this.hex = hex;
+    public void setBinary(int[] binary) {
+        this.binary = binary;
     }
 
-    public FileStorage(String name, String path, String hex) {
+    public FileStorage(String name, String path, int[] binary) {
         this.name = name;
         this.path = path;
-        this.hex = hex;
-    }
-
-    @Override
-    public String toString() {
-        return "name='" + name + '\'' +
-                ", path='" + path + '\'' +
-                ", hex='" + hex + '\'';
+        this.binary = binary;
     }
 }

@@ -2,6 +2,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,12 +36,12 @@ public class Runner {
         if (retValue == JFileChooser.APPROVE_OPTION) {
             path = jFileChooser.getSelectedFile().getPath();
             if (!path.equals("")) {
-                fileWalker(path);
+                folderWalker(path);
             }
         }
     }
 
-    private void fileWalker(final String path) {
+    private void folderWalker(final String path) {
         try (Stream<Path> walk = Files.walk(Paths.get(path))) {
             List<String> paths = walk.filter(Files::isRegularFile)
                     .map(x -> x.toString()).collect(Collectors.toList());
@@ -53,34 +54,33 @@ public class Runner {
     }
 
     private void reader(List<String> path) throws IOException {
-        List<byte[]> bytes = new ArrayList<>();
-        List<String> hexs = new ArrayList<>();
+        List<byte[]> byteList = new ArrayList<>();
+        List<int[]> binaryList = new ArrayList<>();
         Map<String, FileStorage> fileStorageMap = new HashMap<>();
-        StringBuffer stringBuffer = new StringBuffer();
 
         path.forEach(p -> {
             try {
-                bytes.add(Files.readAllBytes(Paths.get(p)));
+                byteList.add(Files.readAllBytes(Paths.get(p)));
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
-        bytes.forEach(b -> {
-            for (int i = 0; i < b.length; i++) {
-                stringBuffer.append(Integer.toHexString(0xff & b[i]));
+        byteList.forEach(bytes -> {
+            char[] chars = new BigInteger(bytes).toString(2).toCharArray();
+            int[] binary = new int[chars.length];
+            for (int i = 0; i < chars.length; i++) {
+                binary[i] = Integer.valueOf(String.valueOf(chars[i]),2);
             }
-            hexs.add(stringBuffer.toString());
-            stringBuffer.delete(0, stringBuffer.length());
+            binaryList.add(binary);
         });
 
-        for (int i = 0; i < hexs.size(); i++) {
+        for (int i = 0; i < binaryList.size(); i++) {
             String name = new File(path.get(i)).getName();
-            fileStorageMap.put(name, new FileStorage(name, path.get(i), hexs.get(i)));
+            fileStorageMap.put(name, new FileStorage(name, path.get(i), binaryList.get(i)));
         }
 
         if (fileStorageMap.size() > 0) {
             Heming.getInstance().run(fileStorageMap);
         }
     }
-
 }
